@@ -27,9 +27,7 @@
   },
   "peerDependencies": {
     "@windoge98/plug-n-play": ">=0.1.0-beta",
-    "@dfinity/agent": "^2.4.1",
-    "@dfinity/identity": "^2.4.1",
-    "@dfinity/principal": "^2.4.1"
+    "@icp-sdk/core": "^5.4.0"
   },
   "devDependencies": {
     "typescript": "^5.3.3",

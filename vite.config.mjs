@@ -46,9 +46,9 @@ const packageConfigs = {
     fileName: (format) => format === 'es' ? 'index.es.js' : 'index.js',
     outDir: "packages/metamask/dist",
     external: [
-      "@dfinity/agent",
-      "@dfinity/identity",
-      "@dfinity/principal",
+      "@icp-sdk/core/agent",
+      "@icp-sdk/core/identity",
+      "@icp-sdk/core/principal",
       "ic-siwe-js",
       "viem",
       "viem/chains",
@@ -74,9 +74,9 @@ const packageConfigs = {
     fileName: (format) => format === 'es' ? 'index.es.js' : 'index.js',
     outDir: "packages/okx/dist",
     external: [
-      "@dfinity/agent",
-      "@dfinity/identity",
-      "@dfinity/principal",
+      "@icp-sdk/core/agent",
+      "@icp-sdk/core/identity",
+      "@icp-sdk/core/principal",
       "@solana/web3.js",
       "@solana/wallet-adapter-base",
       "bs58",
@@ -101,9 +101,9 @@ const packageConfigs = {
     fileName: (format) => format === 'es' ? 'index.es.js' : 'index.js',
     outDir: "packages/phantom/dist",
     external: [
-      "@dfinity/agent",
-      "@dfinity/identity",
-      "@dfinity/principal",
+      "@icp-sdk/core/agent",
+      "@icp-sdk/core/identity",
+      "@icp-sdk/core/principal",
       "@solana/web3.js",
       "@solana/wallet-adapter-base",
       "@solana/wallet-adapter-phantom",
@@ -130,9 +130,9 @@ const packageConfigs = {
     fileName: (format) => format === 'es' ? 'index.es.js' : 'index.js',
     outDir: "packages/solflare/dist",
     external: [
-      "@dfinity/agent",
-      "@dfinity/identity",
-      "@dfinity/principal",
+      "@icp-sdk/core/agent",
+      "@icp-sdk/core/identity",
+      "@icp-sdk/core/principal",
       "@solana/web3.js",
       "@solana/wallet-adapter-base",
       "@solana/wallet-adapter-solflare",
@@ -159,9 +159,9 @@ const packageConfigs = {
     fileName: (format) => format === 'es' ? 'index.es.js' : 'index.js',
     outDir: "packages/walletconnect/dist",
     external: [
-      "@dfinity/agent",
-      "@dfinity/identity",
-      "@dfinity/principal",
+      "@icp-sdk/core/agent",
+      "@icp-sdk/core/identity",
+      "@icp-sdk/core/principal",
       "@solana/web3.js",
       "@solana/wallet-adapter-base",
       "@solana/wallet-adapter-walletconnect",
@@ -188,9 +188,9 @@ const packageConfigs = {
     fileName: (format) => format === 'es' ? 'index.es.js' : 'index.js',
     outDir: "packages/coinbase/dist",
     external: [
-      "@dfinity/agent",
-      "@dfinity/identity",
-      "@dfinity/principal",
+      "@icp-sdk/core/agent",
+      "@icp-sdk/core/identity",
+      "@icp-sdk/core/principal",
       "@solana/web3.js",
       "@solana/wallet-adapter-base",
       "@solana/wallet-adapter-coinbase",
@@ -217,9 +217,9 @@ const packageConfigs = {
     fileName: (format) => format === 'es' ? 'index.es.js' : 'index.js',
     outDir: "packages/rabby/dist",
     external: [
-      "@dfinity/agent",
-      "@dfinity/identity",
-      "@dfinity/principal",
+      "@icp-sdk/core/agent",
+      "@icp-sdk/core/identity",
+      "@icp-sdk/core/principal",
       "ic-siwe-js",
       "viem",
       "viem/chains",
@@ -304,7 +304,6 @@ export default defineConfig({
     commonjsOptions: {
       include: [/node_modules/],
       transformMixedEsModules: true,
-      esmExternals: ['@dfinity/identity'],
       requireReturnsDefault: 'auto',
     },
     outDir: currentConfig.outDir,
@@ -320,6 +319,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "jsdom",
+    // Only run the library's own tests; exclude tooling/sub-package suites
+    // (.claude hooks, packages/*) that vitest's defaults would otherwise sweep in.
+    include: ["tests/**/*.{test,spec}.ts"],
+    exclude: ["node_modules/**", "dist/**", "packages/**", ".claude/**"],
   },
   
   define: {
@@ -340,9 +343,6 @@ export default defineConfig({
         stream: "stream-browserify",
         util: "util/",
       } : {}),
-      // Fix for @dfinity/identity ESM imports - add .js extensions
-      "@dfinity/identity/lib/cjs/identity/partial": "@dfinity/identity/lib/cjs/identity/partial.js",
-      "@dfinity/identity/lib/esm/identity/partial": "@dfinity/identity/lib/esm/identity/partial.js",
     },
     extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json'],
   },
@@ -368,11 +368,11 @@ export default defineConfig({
     },
     include: [
       // Pre-bundle problematic dependencies
-      "@dfinity/agent",
-      "@dfinity/identity", 
-      "@dfinity/candid",
-      "@dfinity/principal",
-      "@dfinity/auth-client",
+      "@icp-sdk/core/agent",
+      "@icp-sdk/core/identity", 
+      "@icp-sdk/core/candid",
+      "@icp-sdk/core/principal",
+      "@icp-sdk/auth/client",
       "@dfinity/utils",
       "borc",
       "bignumber.js",

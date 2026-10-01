@@ -61,11 +61,6 @@ export interface SiwsAdapterConfig extends GlobalPnpConfig {
   appIcons?: string[];
 }
 
-export interface StoicAdapterConfig extends GlobalPnpConfig {
-  maxTimeToLive?: bigint;
-  keyType?: "ECDSA" | "Ed25519";
-}
-
 export interface SiweAdapterConfig extends GlobalPnpConfig {
   siweProviderCanisterId?: string;
   providerCanisterId?: string;
@@ -80,8 +75,7 @@ export type AdapterSpecificConfig =
   | NFIDAdapterConfig
   | OisyAdapterConfig
   | SiwsAdapterConfig
-  | SiweAdapterConfig
-  | StoicAdapterConfig;
+  | SiweAdapterConfig;
 
 // Generic type guard factory
 function createTypeGuard<T extends GlobalPnpConfig>(
@@ -116,4 +110,3 @@ export const isIIAdapterConfig = createTypeGuard<IIAdapterConfig>(
   "hostUrl"
 );
 export const isSiweAdapterConfig = createTypeGuard<SiweAdapterConfig>('siweProviderCanisterId');
-export const isStoicAdapterConfig = createTypeGuard<StoicAdapterConfig>('keyType'); 

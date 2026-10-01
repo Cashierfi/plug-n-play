@@ -6,12 +6,12 @@ import {
   deriveAccountId,
   type AdapterConstructorArgs 
 } from "@windoge98/plug-n-play";
-import { ActorSubclass } from "@dfinity/agent";
+import { ActorSubclass } from "@icp-sdk/core/agent";
 import {
   Ed25519KeyIdentity,
   DelegationIdentity,
   DelegationChain,
-} from "@dfinity/identity";
+} from "@icp-sdk/core/identity";
 import { SiweManager } from "ic-siwe-js";
 import { createWalletClient, custom, type WalletClient } from "viem";
 import { mainnet } from "viem/chains";

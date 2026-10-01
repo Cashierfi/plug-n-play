@@ -12,18 +12,18 @@ export default defineConfig({
     rollupOptions: {
       external: [
         '@windoge98/plug-n-play',
-        '@dfinity/agent',
-        '@dfinity/identity',
-        '@dfinity/principal',
-        '@dfinity/candid',
-        '@dfinity/auth-client'
+        '@icp-sdk/core/agent',
+        '@icp-sdk/core/identity',
+        '@icp-sdk/core/principal',
+        '@icp-sdk/core/candid',
+        '@icp-sdk/auth/client'
       ],
       output: {
         globals: {
           '@windoge98/plug-n-play': 'PlugNPlay',
-          '@dfinity/agent': 'DfinityAgent',
-          '@dfinity/identity': 'DfinityIdentity',
-          '@dfinity/principal': 'DfinityPrincipal'
+          '@icp-sdk/core/agent': 'DfinityAgent',
+          '@icp-sdk/core/identity': 'DfinityIdentity',
+          '@icp-sdk/core/principal': 'DfinityPrincipal'
         }
       }
     },

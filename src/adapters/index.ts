@@ -8,7 +8,6 @@ import oisyLogo from "../../assets/oisy_logo.webp";
 import nfidLogo from "../../assets/nfid.png";
 import dfinityLogo from "../../assets/dfinity.webp";
 import plugLogo from "../../assets/plug.webp";
-import stoicLogo from "../../assets/stoic.jpg";
 
 // Define IC-only adapters using unified signer adapter
 export const Adapters: Record<string, Adapter.Config> = {
@@ -43,20 +42,6 @@ export const Adapters: Record<string, Adapter.Config> = {
       ...getDefaultTransportConfig(),
     },
   },
-  stoic: {
-    id: "stoic",
-    enabled: true,
-    walletName: "Stoic",
-    logo: stoicLogo,
-    website: "https://www.stoicwallet.com",
-    chain: "ICP",
-    adapter: UnifiedSignerAdapter,
-    config: {
-      signerType: SignerType.STOIC,
-      maxTimeToLive: BigInt(8 * 60 * 60 * 1000 * 1000 * 1000), // 8 hours
-      keyType: "ECDSA" as const,
-    },
-  },
   ii: {
     id: "ii",
     enabled: true,
@@ -69,7 +54,7 @@ export const Adapters: Record<string, Adapter.Config> = {
       fetchRootKey: true,
       verifyQuerySignatures: false,
       delegationTimeout: 24 * 60 * 60 * 1000,
-      iiProviderUrl: "https://id.ai", // II 2.0 (new domain)
+      iiProviderUrl: "https://id.ai/authorize", // II 2.0 (new domain)
     },
   },
   ii_legacy: {

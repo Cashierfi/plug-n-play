@@ -7,11 +7,11 @@ import {
   deriveAccountId,
   formatSiwsMessage
 } from '@windoge98/plug-n-play';
-import { ActorSubclass, AnonymousIdentity, type Identity } from "@dfinity/agent";
+import { ActorSubclass, AnonymousIdentity, type Identity } from "@icp-sdk/core/agent";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
 import { WalletAdapterNetwork, WalletReadyState } from "@solana/wallet-adapter-base";
 import { Connection, PublicKey, Transaction, LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { Ed25519KeyIdentity, DelegationIdentity, DelegationChain } from "@dfinity/identity";
+import { Ed25519KeyIdentity, DelegationIdentity, DelegationChain } from "@icp-sdk/core/identity";
 import bs58 from "bs58";
 // @ts-ignore - DID file import
 import { idlFactory as siwsProviderIdlFactory } from './did/ic_siws_provider.did.js';

@@ -1,6 +1,6 @@
-import { AnonymousIdentity, HttpAgent } from "@dfinity/agent";
-import { Principal } from "@dfinity/principal";
-import { ActorSubclass } from "@dfinity/agent";
+import { AnonymousIdentity, HttpAgent } from "@icp-sdk/core/agent";
+import { Principal } from "@icp-sdk/core/principal";
+import { ActorSubclass } from "@icp-sdk/core/agent";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { IIAdapterConfig, OisyAdapterConfig, PlugAdapterConfig, NFIDAdapterConfig, SiwsAdapterConfig } from "./AdapterConfigs";
 
