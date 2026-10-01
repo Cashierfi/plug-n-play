@@ -13,8 +13,8 @@ import {
 } from '@windoge98/plug-n-play';
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import type { PublicKey } from '@solana/web3.js';
-import { ActorSubclass, AnonymousIdentity, type Identity } from "@dfinity/agent";
-import { Ed25519KeyIdentity, DelegationIdentity, DelegationChain } from "@dfinity/identity";
+import { ActorSubclass, AnonymousIdentity, type Identity } from "@icp-sdk/core/agent";
+import { Ed25519KeyIdentity, DelegationIdentity, DelegationChain } from "@icp-sdk/core/identity";
 import bs58 from "bs58";
 // @ts-ignore - DID file import
 import { idlFactory as siwsProviderIdlFactory } from './did/ic_siws_provider.did.js';

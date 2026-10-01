@@ -221,16 +221,16 @@ export class ConfigBuilder {
    * Quick builder to enable Internet Computer adapters with optional overrides.
    *
    * Usage examples:
-   * - withIcAdapters() // enables ii, plug, oisy, nfid, stoic
+   * - withIcAdapters() // enables ii, plug, oisy, nfid
    * - withIcAdapters({ plug: { enabled: true, whitelist: ['canister1'] } })
    * - withIcAdapters({ ii: false }) // disables ii while enabling the rest
    */
   withIcAdapters(
-    overrides?: Partial<Record<'ii' | 'plug' | 'oisy' | 'nfid' | 'stoic', AdapterOverride | boolean>> & {
-      exclude?: Array<'ii' | 'plug' | 'oisy' | 'nfid' | 'stoic'>;
+    overrides?: Partial<Record<'ii' | 'plug' | 'oisy' | 'nfid', AdapterOverride | boolean>> & {
+      exclude?: Array<'ii' | 'plug' | 'oisy' | 'nfid'>;
     }
   ): this {
-    const icIds = ['ii', 'plug', 'oisy', 'nfid', 'stoic'] as const;
+    const icIds = ['ii', 'plug', 'oisy', 'nfid'] as const;
     const excluded = new Set(overrides && 'exclude' in overrides ? (overrides.exclude || []) : []);
     if (!this.config.adapters) this.config.adapters = {};
     

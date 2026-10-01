@@ -1,7 +1,7 @@
 // src/adapters/BaseSiwxAdapter.ts
 
-import { Ed25519KeyIdentity, Delegation, DelegationChain, DelegationIdentity } from "@dfinity/identity";
-import { type ActorSubclass, type Identity } from "@dfinity/agent";
+import { Ed25519KeyIdentity, Delegation, DelegationChain, DelegationIdentity } from "@icp-sdk/core/identity";
+import { type ActorSubclass, type Identity } from "@icp-sdk/core/agent";
 import { BaseDelegationAdapter } from "./BaseDelegationAdapter";
 
 /**
@@ -35,7 +35,7 @@ export abstract class BaseSiwxAdapter<TConfig = any> extends BaseDelegationAdapt
     userCanisterPublicKeyDer: ArrayBuffer,
   ): DelegationIdentity {
     const delegation = new Delegation(
-      (signedDelegation.delegation.pubkey as Uint8Array).slice().buffer,
+      (signedDelegation.delegation.pubkey as Uint8Array).slice(),
       signedDelegation.delegation.expiration,
       signedDelegation.delegation.targets?.length > 0
         ? signedDelegation.delegation.targets[0]
@@ -51,7 +51,7 @@ export abstract class BaseSiwxAdapter<TConfig = any> extends BaseDelegationAdapt
 
     const delegationChain = DelegationChain.fromDelegations(
       delegations,
-      new Uint8Array(userCanisterPublicKeyDer).buffer,
+      new Uint8Array(userCanisterPublicKeyDer) as any,
     );
 
     return DelegationIdentity.fromDelegation(sessionIdentity, delegationChain);

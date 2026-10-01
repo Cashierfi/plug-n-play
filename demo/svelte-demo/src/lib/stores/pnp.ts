@@ -1,12 +1,8 @@
 import { writable, derived, get } from 'svelte/store';
 // Import from source for development
 import { PNP, ConfigBuilder } from '../../../../../src';
-// Import wallet extensions from packages
-import { PhantomExtension } from '../../../../../packages/phantom/src';
-import { SolflareExtension } from '../../../../../packages/solflare/src';
-import { WalletConnectExtension } from '../../../../../packages/walletconnect/src';
-import { MetaMaskExtension } from '../../../../../packages/metamask/src';
-import { RabbyExtension } from '../../../../../packages/rabby/src';
+import { fetchBalance } from './ledger';
+// ICP-only build: non-IC wallet extensions disabled while migrating to @icp-sdk/core v5.
 
 // Stores
 export const pnpInstance = writable<PNP | null>(null);
@@ -27,45 +23,23 @@ const initPNP = () => {
                 timeout: BigInt(24 * 60 * 60 * 1000 * 1000 * 1000),
                 targets: []
             })
-            .withProviders({
-                siws: 'guktk-fqaaa-aaaao-a4goa-cai',
-                siwe: 'r4zqx-aiaaa-aaaar-qbuia-cai',
-            })
-            .withExtensions(PhantomExtension, SolflareExtension, WalletConnectExtension, MetaMaskExtension, RabbyExtension)
             .withIcAdapters()
-            // Configure Plug wallet with account selection enabled (default)
-            .withAdapter('plug', { 
-                enabled: true,
-                // disableAccountSelection: false  // Uncomment to disable account selection UI
-            })
-            // Solana wallets
-            .withAdapter('phantom', { enabled: true })
-            .withAdapter('solflare', { enabled: true })
-            .withAdapter('walletconnect', {
-                enabled: true,
-                projectId: 'YOUR_PROJECT_ID',
-                appName: 'PNP Demo',
-                appDescription: 'Demo using WalletConnect',
-                appUrl: 'https://example.com',
-                appIcons: ['https://example.com/icon.png']
-            })
-            // Ethereum wallets
-            .withAdapter('metamask', { enabled: true })
-            .withAdapter('rabby', { enabled: true })
+            .withAdapter('plug', { enabled: true })
             .build()
     );
 
     pnpInstance.set(pnp);
     
-    // Auto-reconnect IC wallets (not Solana/Ethereum wallets)
+    // Auto-reconnect IC wallets
     const stored = localStorage.getItem('pnpConnectedWallet');
-    const nonIcWallets = ['phantom', 'solflare', 'walletconnect', 'metamask', 'rabby'];
-    if (stored && !nonIcWallets.includes(stored)) {
+    if (stored) {
         pnp.connect(stored).then(account => {
             if (account) {
                 isConnected.set(true);
                 principalId.set(account.owner);
+                subaccount.set(account.subaccount || null);
                 lastEvent.set({ type: 'reconnected', walletId: stored });
+                fetchBalance();
             }
         }).catch(() => localStorage.removeItem('pnpConnectedWallet'));
     }

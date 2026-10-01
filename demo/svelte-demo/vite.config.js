@@ -40,24 +40,10 @@ export default defineConfig({
     include: [
       'buffer',
       'process/browser',
-      '@solana/web3.js',
-      '@solana/spl-token',
-      '@solana/spl-token-metadata',
-      '@solana/wallet-adapter-base',
-      '@solana/wallet-adapter-phantom',
-      '@solana/wallet-adapter-solflare'
     ]
   },
   build: {
     target: 'esnext',
-    rollupOptions: {
-      external: [],
-      output: {
-        manualChunks: {
-          'solana': ['@solana/web3.js', '@solana/spl-token'],
-        }
-      }
-    }
   },
   server: {
     port: 3000,

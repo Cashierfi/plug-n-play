@@ -1,8 +1,7 @@
 // src/adapters/ic/IIAdapter.ts
 
-import { type ActorSubclass, Identity, HttpAgent } from "@dfinity/agent";
-import { AuthClient } from "@dfinity/auth-client";
-// Note: AuthClientTransport is not needed as we'll use AuthClient directly
+import { type ActorSubclass, Identity, HttpAgent } from "@icp-sdk/core/agent";
+import { AuthClient } from "@icp-sdk/auth/client";
 import { type Wallet, Adapter } from "../../types/index.d";
 import { BaseAdapter } from "../BaseAdapter";
 import { createAccountFromPrincipal } from "../../utils";
@@ -41,58 +40,52 @@ export class IIAdapter extends BaseAdapter<IIAdapterConfig> implements Adapter.I
       throw new Error('Invalid config for IIAdapter');
     }
     super(normalized as any);
-    
-    // Initialize AuthClient immediately for Safari compatibility
-    // This happens during app initialization, not during user interaction
+
+    // @icp-sdk/auth v7 AuthClient: synchronous constructor (no static `create`).
+    // Build it eagerly so Safari popups aren't blocked by async work later.
     this.initializeAuthClientSync();
   }
 
   private initializeAuthClientSync(): void {
-    // Initialize AuthClient with transport for better session management
-    AuthClient.create({
-      idleOptions: {
-        idleTimeout: Number(
-          this.config.delegationTimeout ?? 1000 * 60 * 60 * 24
-        ), // Default 24 hours
-        disableDefaultIdleCallback: true,
-      },
-    })
-      .then(async (client) => {
-        this.authClient = client;
-        this.authClient.idleManager?.registerCallback?.(() =>
-          this.refreshLogin()
-        );
-      })
-      .catch((err) => {
-        this.handleError("Failed to create AuthClient", err);
-        this.setState(Adapter.Status.ERROR);
+    try {
+      this.authClient = new AuthClient({
+        // Library default identityProvider is `https://id.ai/authorize` (II 2.0).
+        // Only override when consumer supplies a custom URL.
+        ...(this.config.iiProviderUrl
+          ? { identityProvider: this.config.iiProviderUrl }
+          : {}),
+        derivationOrigin: this.config.derivationOrigin,
+        windowOpenerFeatures: (() => {
+          const screen = getScreenDimensions();
+          return `width=500,height=600,left=${screen.width / 2 - 250},top=${
+            screen.height / 2 - 300
+          }`;
+        })(),
+        idleOptions: {
+          idleTimeout: Number(
+            this.config.delegationTimeout ?? 1000 * 60 * 60 * 24,
+          ),
+          disableDefaultIdleCallback: true,
+        },
       });
+      this.authClient.idleManager?.registerCallback?.(() => this.refreshLogin());
+    } catch (err) {
+      this.handleError("Failed to create AuthClient", err);
+      this.setState(Adapter.Status.ERROR);
+    }
   }
 
-  private async ensureAuthClient(): Promise<void> {
-    if (this.authClient) {
-      return;
-    }
-    
-    // Wait for AuthClient to be initialized
-    let attempts = 0;
-    while (!this.authClient && attempts < 50) { // Max 5 seconds
-      await new Promise(resolve => setTimeout(resolve, 100));
-      attempts++;
-    }
-    
+  private ensureAuthClient(): void {
     if (!this.authClient) {
-      throw new Error('Failed to initialize AuthClient after 5 seconds');
+      throw new Error("AuthClient is not initialized");
     }
   }
 
   async openChannel(): Promise<void> {
-    // No-op for II adapter - AuthClient is initialized in constructor
-    // This method exists for compatibility with other adapters
+    // No-op for II adapter - AuthClient is initialized in constructor.
     return Promise.resolve();
   }
 
-  // Use the resolved config for agent initialization
   private async initAgent(identity: Identity): Promise<void> {
     const agent = await this.buildHttpAgent({ identity });
     this.agent = agent;
@@ -101,25 +94,20 @@ export class IIAdapter extends BaseAdapter<IIAdapterConfig> implements Adapter.I
   async connect(): Promise<Wallet.Account> {
     try {
       this.setState(Adapter.Status.CONNECTING);
-      
-      // Ensure AuthClient is ready
-      await this.ensureAuthClient();
-      
-      // Check if already authenticated before opening popup
-      const isAuthenticated = await this.authClient!.isAuthenticated();
-      
-      if (isAuthenticated) {
-        const identity = this.authClient!.getIdentity();
+      this.ensureAuthClient();
+
+      // v7: isAuthenticated() is now synchronous.
+      if (this.authClient!.isAuthenticated()) {
+        const identity = await this.authClient!.getIdentity();
         const principal = identity?.getPrincipal();
-        
+
         if (identity && principal && !principal.isAnonymous()) {
           const account = await this.createAccountFromIdentity(identity);
           this.setState(Adapter.Status.CONNECTED);
           return account;
         }
       }
-      
-      // Not authenticated or invalid session - open login popup
+
       return await this.performLogin();
     } catch (error) {
       this.setState(Adapter.Status.ERROR);
@@ -128,47 +116,27 @@ export class IIAdapter extends BaseAdapter<IIAdapterConfig> implements Adapter.I
   }
 
   private async performLogin(): Promise<Wallet.Account> {
-    return new Promise<Wallet.Account>((resolve, reject) => {
-      // Determine which II provider to use
-      const identityProvider = this.config.iiProviderUrl || 'https://id.ai';
-      
-      // Log which provider is being used for debugging
-      console.log(`[IIAdapter] Using Identity Provider: ${identityProvider}`);
-      
-      const loginOptions = {
-        derivationOrigin: this.config.derivationOrigin,
-        identityProvider,
+    const identityProvider =
+      this.config.iiProviderUrl || "https://id.ai/#authorize";
+    console.log(`[IIAdapter] Using Identity Provider: ${identityProvider}`);
+
+    try {
+      // v7: signIn() is promise-based (no onSuccess/onError callbacks).
+      // identityProvider/derivationOrigin/windowOpenerFeatures already set in constructor.
+      const identity = await this.authClient.signIn({
         maxTimeToLive:
           this.config.delegationTimeout ??
-          BigInt(1 * 24 * 60 * 60 * 1000 * 1000 * 1000), // Default 1 day
-        windowOpenerFeatures: (() => {
-          const screen = getScreenDimensions();
-          return `width=500,height=600,left=${screen.width / 2 - 250},top=${
-            screen.height / 2 - 300
-          }`;
-        })(),
-        onSuccess: async () => {
-          try {
-            const identity = this.authClient!.getIdentity();
-            const account = await this.createAccountFromIdentity(identity);
-            this.setState(Adapter.Status.CONNECTED);
-            resolve(account);
-          } catch (error) {
-            this.setState(Adapter.Status.ERROR);
-            reject(error);
-          }
-        },
-        onError: (error?: string) => {
-          this.handleError("Login error", error || "Unknown error");
-          this.setState(Adapter.Status.ERROR);
-          reject(
-            new Error(`II Authentication failed: ${error || "Unknown error"}`)
-          );
-        },
-      };
-      
-      this.authClient!.login(loginOptions);
-    });
+          BigInt(1 * 24 * 60 * 60 * 1000 * 1000 * 1000),
+      });
+      const account = await this.createAccountFromIdentity(identity);
+      this.setState(Adapter.Status.CONNECTED);
+      return account;
+    } catch (error) {
+      this.handleError("Login error", error);
+      this.setState(Adapter.Status.ERROR);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`II Authentication failed: ${message}`);
+    }
   }
 
   private async createAccountFromIdentity(identity: Identity): Promise<Wallet.Account> {
@@ -196,7 +164,7 @@ export class IIAdapter extends BaseAdapter<IIAdapterConfig> implements Adapter.I
   }
 
   async isConnected(): Promise<boolean> {
-    return this.authClient ? await this.authClient.isAuthenticated() : false;
+    return this.authClient ? this.authClient.isAuthenticated() : false;
   }
 
   // Implementation for BaseIcAdapter actor caching
@@ -216,7 +184,7 @@ export class IIAdapter extends BaseAdapter<IIAdapterConfig> implements Adapter.I
 
   async getPrincipal(): Promise<string> {
     if (!this.authClient) throw new Error("Not connected");
-    const identity = this.authClient.getIdentity();
+    const identity = await this.authClient.getIdentity();
     if (!identity) throw new Error("Identity not available");
     const principal = identity.getPrincipal();
     return principal.toText();
@@ -227,7 +195,7 @@ export class IIAdapter extends BaseAdapter<IIAdapterConfig> implements Adapter.I
    * @returns The identity provider URL (e.g., 'https://id.ai' for II 2.0 or 'https://identity.ic0.app' for II 1.0)
    */
   getIdentityProvider(): string {
-    return this.config.iiProviderUrl || 'https://id.ai';
+    return this.config.iiProviderUrl || 'https://id.ai/authorize';
   }
 
   /**
@@ -241,19 +209,20 @@ export class IIAdapter extends BaseAdapter<IIAdapterConfig> implements Adapter.I
 
   private async refreshLogin(): Promise<void> {
     try {
-      await this.ensureAuthClient();
-      await this.performLogin(); 
+      this.ensureAuthClient();
+      await this.performLogin();
     } catch (error) {
       this.handleError('Failed to refresh login', error);
-      await this.disconnect().catch(() => {}); 
+      await this.disconnect().catch(() => {});
     }
   }
 
   // Disconnect logic specific to II
   protected async disconnectInternal(): Promise<void> {
-    if (this.authClient) { 
-        await this.authClient.logout();
-    } 
+    if (this.authClient) {
+      // v7 renamed logout → signOut.
+      await this.authClient.signOut();
+    }
   }
 
   // Cleanup logic specific to II
@@ -267,10 +236,10 @@ export class IIAdapter extends BaseAdapter<IIAdapterConfig> implements Adapter.I
    * Ensures AuthClient and agent are properly cleaned up
    */
   protected async onDispose(): Promise<void> {
-    // Ensure logout if still connected
+    // Ensure sign-out if still connected
     if (this.authClient) {
       try {
-        await this.authClient.logout();
+        await this.authClient.signOut();
       } catch (error) {
         // Best effort - already disposing
       }

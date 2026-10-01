@@ -11,9 +11,9 @@ export default defineConfig({
     },
     rollupOptions: {
       external: [
-        '@dfinity/agent',
-        '@dfinity/identity', 
-        '@dfinity/principal',
+        '@icp-sdk/core/agent',
+        '@icp-sdk/core/identity', 
+        '@icp-sdk/core/principal',
         '@windoge98/plug-n-play',
         /^@windoge98\//,
         'ic-siwe-js',
@@ -22,9 +22,9 @@ export default defineConfig({
       ],
       output: {
         globals: {
-          '@dfinity/agent': 'DfinityAgent',
-          '@dfinity/identity': 'DfinityIdentity',
-          '@dfinity/principal': 'DfinityPrincipal',
+          '@icp-sdk/core/agent': 'DfinityAgent',
+          '@icp-sdk/core/identity': 'DfinityIdentity',
+          '@icp-sdk/core/principal': 'DfinityPrincipal',
           '@windoge98/plug-n-play': 'PNP',
           'ic-siwe-js': 'IcSiweJs',
           'viem': 'viem'

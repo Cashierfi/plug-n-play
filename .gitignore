@@ -39,3 +39,6 @@ yarn.lock
 .vscode/*
 dist
 docs
+.claude
+plans
+release-manifest.json

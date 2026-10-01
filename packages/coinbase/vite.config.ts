@@ -12,10 +12,10 @@ export default defineConfig({
     rollupOptions: {
       external: [
         '@windoge98/plug-n-play',
-        '@dfinity/agent',
-        '@dfinity/identity',
-        '@dfinity/principal',
-        '@dfinity/candid',
+        '@icp-sdk/core/agent',
+        '@icp-sdk/core/identity',
+        '@icp-sdk/core/principal',
+        '@icp-sdk/core/candid',
         '@solana/wallet-adapter-base',
         '@solana/wallet-adapter-coinbase',
         '@solana/web3.js',
@@ -26,10 +26,10 @@ export default defineConfig({
       output: {
         globals: {
           '@windoge98/plug-n-play': 'PlugNPlay',
-          '@dfinity/agent': 'agent',
-          '@dfinity/identity': 'identity',
-          '@dfinity/principal': 'principal',
-          '@dfinity/candid': 'candid',
+          '@icp-sdk/core/agent': 'agent',
+          '@icp-sdk/core/identity': 'identity',
+          '@icp-sdk/core/principal': 'principal',
+          '@icp-sdk/core/candid': 'candid',
           '@solana/wallet-adapter-base': 'walletAdapterBase',
           '@solana/wallet-adapter-coinbase': 'walletAdapterCoinbase',
           '@solana/web3.js': 'solanaWeb3',

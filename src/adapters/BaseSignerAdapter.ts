@@ -1,7 +1,7 @@
-import { Principal } from "@dfinity/principal";
-import { Actor, HttpAgent, type ActorSubclass } from "@dfinity/agent";
-import { SignerAgent } from "@slide-computer/signer-agent";
-import { Signer } from "@slide-computer/signer";
+import { Principal } from "@icp-sdk/core/principal";
+import { Actor, HttpAgent, type ActorSubclass } from "@icp-sdk/core/agent";
+import { SignerAgent } from "@icp-sdk/signer/agent";
+import { Signer, type Transport } from "@icp-sdk/signer";
 import { BaseAdapter, AdapterConstructorArgs } from "./BaseAdapter";
 import { AdapterSpecificConfig } from "../types/AdapterConfigs";
 import { Adapter, Wallet } from "../types/index.d";
@@ -16,7 +16,7 @@ import { getAccountSelector, cleanupAccountSelector } from "../ui/AccountSelecto
 export abstract class BaseSignerAdapter<T extends AdapterSpecificConfig = AdapterSpecificConfig> extends BaseAdapter<T> {
   protected signer: Signer | null = null;
   protected agent: HttpAgent | SignerAgent<any> | null = null;
-  protected signerAgent: SignerAgent<Signer> | null = null;
+  protected signerAgent: SignerAgent<Transport> | null = null;
   protected transport: any = null;
   protected principalStorageKey: string;
   private connectionAbortController: AbortController | null = null;
@@ -105,7 +105,7 @@ export abstract class BaseSignerAdapter<T extends AdapterSpecificConfig = Adapte
       // Race between getting accounts, detecting window focus, and timeout
       const accounts = await withTimeout(
         Promise.race([
-          this.signerAgent!.signer.accounts().then(result => {
+          this.signerAgent!.signer.getAccounts().then(result => {
             // Mark that we've successfully received accounts
             accountsReceived = true;
             return result;
@@ -323,7 +323,7 @@ export abstract class BaseSignerAdapter<T extends AdapterSpecificConfig = Adapte
   /**
  * Get current SignerAgent instance
  */
-  public getSignerAgent(): SignerAgent<Signer> | null {
+  public getSignerAgent(): SignerAgent<Transport> | null {
     return this.signerAgent;
   }
 } 

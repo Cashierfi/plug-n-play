@@ -1,5 +1,5 @@
 import { writable, get } from 'svelte/store';
-import { Principal } from '@dfinity/principal';
+import { Principal } from '@icp-sdk/core/principal';
 import { pnpInstance } from './pnp';
 import { idlFactory, canisterId } from '../idls/ksicp_ledger';
 import type { _SERVICE } from '../idls/ksicp_ledger/ksicp_ledger.did';
